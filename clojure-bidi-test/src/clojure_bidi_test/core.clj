@@ -24,23 +24,34 @@
 
 
 (def labyrinth (atom {:root       :A
-                      :neigh-list {:A {:neigh {:north :B :south :C}}
+                      :neigh-list {:A {:neigh {:north :B :south :C} }
                                    :B {:neigh {:east :D :south :A}}
                                    :C {:neigh {:west :E}}
                                    :D {:neigh {:south :A}}
-                                   :E {:neigh {:north :A} :treasure true}}}))
-
-(defn wrap [body]
-  {:data (dissoc body :neigh)
-   :links (map (fn [[from to]] {:rel from :href (str "/vertex/" (name to))}) (:neigh body))})
+                                   :E {:neigh {:north :A} :treasure true }}}))
 
 (defn neighbours-of [id] (get-in @labyrinth [:neigh-list id]))
 
-(defroutes routes
-  (GET "/" req (resp/redirect (str "/vertex/" (-> @labyrinth :root name))))
-  (GET "/vertex/:id" {:keys [params]}
-       (let [id (-> params :id keyword)]
-         {:body (wrap (neighbours-of id))})))
+(declare bidi-wrap)
+(declare bidi-routes)
+
+(defn vertex [{:keys [params]}]
+  (let [id (-> params :id keyword)]
+    {:body (bidi-wrap (neighbours-of id))}))
+(defn root [r] (resp/redirect (path-for bidi-routes vertex :id (:root @labyrinth))))
+
+
+(def bidi-routes ["/" {""        root
+                       "vertex/" {[:id] vertex}}])
+
+(defn bidi-wrap [body]
+  {:data (dissoc body :neigh)
+   :links (map (fn [[from to]]
+                 (let [href (path-for bidi-routes vertex :id to)]
+                   (println "href" vertex href bidi-routes to)
+                   {:rel from :href href})) (:neigh body))})
+
+(def routes (make-handler bidi-routes))
 
 (def handler
   (-> routes
