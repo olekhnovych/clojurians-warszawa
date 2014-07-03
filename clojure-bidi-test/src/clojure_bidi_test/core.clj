@@ -1,4 +1,20 @@
 (ns clojure-bidi-test.core
+  "This is an extremely simple RESTful labyrinth API.
+   1. Run lein ring server and go to localhost:3000 to find out how to move around the labirynth
+   2. Inspecting the code shows that there are 3 places where the string \"/vertex\" is used.
+      That's no good as it's error prone. In particular we want to use bidi library to reduce this to number to 1
+   3. Go through the bidi tutorial at https://github.com/juxt/bidi#take-5-minutes-to-learn-bidi-using-the-repl
+   4. Refactor the code below so that:
+      a) bidi is used ;)
+      b) there is only one place where string /vertex is used
+      c) all other functionality is not changed
+   5. Add a possibility to modify the labirynth
+      a) you should be able to PUT /vertex/:id with body
+      b) you should be able to PUT /edge/:from/:to
+      c) make sure the /vertex is still not duplicated
+
+      Hint: you'll probably need to use ANY instead of GET to achieve that. That's fine.
+      "
   (:require [compojure.core :refer [defroutes GET POST]]
             [ring.middleware.json :as middleware]
             [ring.util.response :as resp]
